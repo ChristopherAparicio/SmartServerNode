@@ -48,8 +48,9 @@ module.exports.listen = function(io){
 		});	
 
 		socket.on('next_musique', function () {
-        	socket.emit('raspberry_disconnect', 'Disconnect Successfull');
-        	socket.close();
+			//Check Django Next Music
+			var nextMusique = "Black Eyes Peas"
+
 		});	
 
 		socket.on('raspberry_disconnect', function () {
