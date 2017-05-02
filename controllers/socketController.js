@@ -13,16 +13,16 @@ clientRedis.on('connect',function(){
 	console.log('Connection to database successfull');
 })
 
-var alarache;
+
+var MapStorageManager = require("../helpers/MapStorageManager");
+
 // Store Socket
 // macStorage : mac --> socketId : Useful for Django to retrieve socket
-
-var macStorage    = new Map();
-var socketStorage = new Map();
 
 module.exports.listen = function(io){
 	io.sockets.on('connection', function (socket) {
 		console.log('Incoming connection from raspberry');
+		
 		socket.on('raspberry_registration', function (registrationMessage) {
 			
 			// First Step : Check Django Database
@@ -31,16 +31,14 @@ module.exports.listen = function(io){
 
 			if(djangoReturn)
 			{
-				// Add Mapping between Raspberry.Id --> Socket.ID
-				socketStorage.set(registrationObject.raspberryId,socket.id);
-				macStorage.set(socket.id,registrationObject.raspberryId);
+				// Add Mapping between Raspberry.Id <--> Socket.ID
+				MapStorageManager.addToSocketStorage(registrationObject.raspberryId,socket.id);
+				MapStorageManager.addToRaspberryIdStorage(socket.id,registrationObject.raspberryId);
 
 				// Add or Overwrite Raspberry Data in Redis
 				//var redisObject = JSON.stringify(registrationObject);
 				//clientRedis.hmset(registrationObject.raspberryId,redisObject);
 				clientRedis.hmset(registrationObject.raspberryId,registrationObject);
-				alarache = registrationObject.raspberryId;
-				
 
 				// Send a positive response
 				socket.emit('raspberry_registration', 'Registration successfull raspberry : ' + registrationMessage.raspberryId);
@@ -53,8 +51,10 @@ module.exports.listen = function(io){
 		});	
 
 		socket.on('next_musique', function () {
-			var idRegistered = macStorage.get(socket.id);
+
+			var idRegistered = MapStorageManager.getRaspberryIdBySocketId(socket.id);
 			console.log(idRegistered);
+
 			clientRedis.hgetall(idRegistered, function(err, reply) {
     				console.log(reply);
 
@@ -64,7 +64,7 @@ module.exports.listen = function(io){
 					var tmp_next_musique = "Lorie A 20 ans";
 					var next_musique = tmp_next_musique;
 
-					reply["musique_suivante"]=next_musique;
+					reply["musique_suivante"]= next_musique;
 					console.log(reply);
 					console.log(idRegistered);
 
@@ -74,6 +74,8 @@ module.exports.listen = function(io){
 		        	
 
 				});
+
+			//Check Django Next Music
 		});	
 
 		socket.on('raspberry_disconnect', function () {
@@ -83,7 +85,7 @@ module.exports.listen = function(io){
 		});	
 
 		socket.on('hello',function(message){
-			var idRegistered = macStorage.get(socket.id);
+			var idRegistered = MapStorageManager.getRaspberryIdBySocketId(socket.id);
 			clientRedis.hgetall(idRegistered, function(err, reply) {
     				console.log(reply);
 				});
