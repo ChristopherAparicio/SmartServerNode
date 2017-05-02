@@ -7,17 +7,18 @@ var redis = require('redis');
 var redisPort = 6379;
 var redisHost = '127.0.0.1';
 
-var client = redis.createClient();
+var clientRedis = redis.createClient();
 
-client.on('connect',function(){
+clientRedis.on('connect',function(){
 	console.log('Connection to database successfull');
 })
 
+var alarache;
 // Store Socket
 // macStorage : mac --> socketId : Useful for Django to retrieve socket
 
 var macStorage    = new Map();
-//var socketStorage = new Map();
+var socketStorage = new Map();
 
 module.exports.listen = function(io){
 	io.sockets.on('connection', function (socket) {
@@ -31,11 +32,15 @@ module.exports.listen = function(io){
 			if(djangoReturn)
 			{
 				// Add Mapping between Raspberry.Id --> Socket.ID
-				macStorage.set(registrationObject.raspberryId,socket.id);
+				socketStorage.set(registrationObject.raspberryId,socket.id);
+				macStorage.set(socket.id,registrationObject.raspberryId);
 
 				// Add or Overwrite Raspberry Data in Redis
-				var redisObject = JSON.stringify(registrationObject);
-				client.set(registrationObject.raspberryId,redisObject);
+				//var redisObject = JSON.stringify(registrationObject);
+				//clientRedis.hmset(registrationObject.raspberryId,redisObject);
+				clientRedis.hmset(registrationObject.raspberryId,registrationObject);
+				alarache = registrationObject.raspberryId;
+				
 
 				// Send a positive response
 				socket.emit('raspberry_registration', 'Registration successfull raspberry : ' + registrationMessage.raspberryId);
@@ -48,18 +53,42 @@ module.exports.listen = function(io){
 		});	
 
 		socket.on('next_musique', function () {
-        	socket.emit('raspberry_disconnect', 'Disconnect Successfull');
-        	socket.close();
+			var idRegistered = macStorage.get(socket.id);
+			console.log(idRegistered);
+			clientRedis.hgetall(idRegistered, function(err, reply) {
+    				console.log(reply);
+
+    				//TODO Get next musique avec l'algo magique
+					// en attendant on créé une variable tmp tmp_next_musique
+
+					var tmp_next_musique = "Lorie A 20 ans";
+					var next_musique = tmp_next_musique;
+
+					reply["musique_suivante"]=next_musique;
+					console.log(reply);
+					console.log(idRegistered);
+
+					clientRedis.hmset(idRegistered,reply);
+
+					socket.emit('next_musique',next_musique);
+		        	
+
+				});
 		});	
 
 		socket.on('raspberry_disconnect', function () {
+
         	socket.emit('raspberry_disconnect', 'Disconnect Successfull');
         	socket.close();
 		});	
 
 		socket.on('hello',function(message){
-			
+			var idRegistered = macStorage.get(socket.id);
+			clientRedis.hgetall(idRegistered, function(err, reply) {
+    				console.log(reply);
+				});
 			console.log(message);
+			console.log(socket.id);
 			io.to(socket.id).emit('raspberry_registration', 'Hello Mother Fucker by IO TO');
 		});
 	});
@@ -67,7 +96,7 @@ module.exports.listen = function(io){
 
 
 module.exports.disconnect = function(callback){
-	client.end(true);
+	clientRedis.end(true);
 	//macStorage.forEach(disconnectSocket);
 	console.log("Redis Disconnected");
 	callback();

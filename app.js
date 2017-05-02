@@ -3,6 +3,7 @@ var http      = require('http');
 var app       = require('express')();
 var server    = require('http').Server(app);
 var io        = require('socket.io').listen(server);
+var socketController = require('./controllers/socketController').listen(io);
 //var adminControl = require('./controllers/adminControl');
 //var userControl  = require('./controllers/userControl');
 //var mongooseManager = require('./models/mongooseManager');
@@ -27,6 +28,11 @@ var sharedsession = require("express-socket.io-session");
 //app.use('/userControl', userControl);
 
 /* Route Redirection */
+app.get('/',function(req, res) {
+  
+  console.log(req.query.name);
+  io.to(req.query.name).emit('raspberry_registration','aqqqqq');
+});
 
 
 /* Start */

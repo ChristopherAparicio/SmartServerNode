@@ -21,18 +21,31 @@ def mock_get_mac():
 def on_res(*args):
     print('on_reponse',args)
 
+
+
 data = {	
 		"raspberryId":mock_get_mac(),
 		"etat":"ATTENTE",
-		"volume":0
-
+		"volume":0,
+    "musique_courrante":"None",
+    "musique_suivante":"None"
 	}
+
+def on_jouer():
+    data["etat"]="JOUE"
+    print(data)
+
+
 json_data_registration = json.dumps(data)
 
 with SocketIO('localhost', 8080, LoggingNamespace) as socketIO:
     socketIO.on('raspberry_registration', on_res)
+    socketIO.on('jouer',on_jouer)
     print(data);
     socketIO.emit('raspberry_registration', json_data_registration,on_res)
     socketIO.emit('hello', 'Hello Boy')
-    socketIO.wait_for_callbacks(seconds=60)
+    socketIO.emit('next_musique')
+    socketIO.emit('pause')
+    socketIO.emit('jouer')
+    socketIO.wait_for_callbacks(seconds=300)
     #socketIO.wait() Wait Forever
