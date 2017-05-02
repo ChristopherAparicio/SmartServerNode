@@ -13,7 +13,6 @@ clientRedis.on('connect',function(){
 	console.log('Connection to database successfull');
 })
 
-
 var MapStorageManager = require("../helpers/MapStorageManager");
 
 // Store Socket

@@ -1,13 +1,14 @@
 var express = require('express');
 var router = express.Router();
+var MapStorageManager = require("../helpers/MapStorageManager");
 
 
-
-router.get('/sendplay', function(req, res) {
-  console.log(req.query.name);
-  var socketId = MapStorageManager.getSocketByRaspberryId(req.query.name);
-  io.to(socketId).emit('jouer','aqqqqq');
-});
-
-
-module.exports = router;
+module.exports = function(io){
+	router.get('/sendplay', function(req, res) {
+		console.log(req.query.name);
+		var socketId = MapStorageManager.getSocketByRaspberryId(req.query.name);
+		io.to(socketId).emit('raspberry_registration','aqqqqq');
+		res.send('Hello World');
+	});
+	return router;
+}
