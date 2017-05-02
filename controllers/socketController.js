@@ -15,6 +15,22 @@ clientRedis.on('connect',function(){
 
 var MapStorageManager = require("../helpers/MapStorageManager");
 
+var request = require('request');
+
+var optionsRegister = {
+    url: 'http://django/raspberry/register',
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    form: {'raspberryId': 'none'}
+}
+
+var optionsNextMusic = {
+    url: 'http://django/raspberry/nextmusic',
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    form: {'raspberryId': 'none'}
+}
+
 // Store Socket
 // macStorage : mac --> socketId : Useful for Django to retrieve socket
 
@@ -24,57 +40,67 @@ module.exports.listen = function(io){
 		
 		socket.on('raspberry_registration', function (registrationMessage) {
 			
-			// First Step : Check Django Database
 			registrationObject = JSON.parse(registrationMessage);
-			var djangoReturn = true;
+			optionsRegister.form.raspberryId = registrationObject.raspberryId;
 
-			if(djangoReturn)
-			{
-				// Add Mapping between Raspberry.Id <--> Socket.ID
-				MapStorageManager.addToSocketStorage(registrationObject.raspberryId,socket.id);
-				MapStorageManager.addToRaspberryIdStorage(socket.id,registrationObject.raspberryId);
+			request(optionsRegister, function (error, response, body) {
+				if(!error && response.statusCode == 200)
+				{
+					var JsonResponse = JSON.parse(body);
+					if(JsonResponse.response)
+					{
+						// Add Mapping between Raspberry.Id <--> Socket.ID
+						MapStorageManager.addToSocketStorage(registrationObject.raspberryId,socket.id);
+						MapStorageManager.addToRaspberryIdStorage(socket.id,registrationObject.raspberryId);
 
-				// Add or Overwrite Raspberry Data in Redis
-				//var redisObject = JSON.stringify(registrationObject);
-				//clientRedis.hmset(registrationObject.raspberryId,redisObject);
-				clientRedis.hmset(registrationObject.raspberryId,registrationObject);
+						// Add or Overwrite Raspberry Data in Redis
+						//var redisObject = JSON.stringify(registrationObject);
+						//clientRedis.hmset(registrationObject.raspberryId,redisObject);
+						clientRedis.hmset(registrationObject.raspberryId,registrationObject);
 
-				// Send a positive response
-				socket.emit('raspberry_registration', 'Registration successfull raspberry : ' + registrationMessage.raspberryId);
-			}
-			else
-			{
-				// Send a negative response
-				socket.emit('raspberry_registration', 'Your are not register in database, please contact admin');
-			}		
+						// Send a positive response
+						socket.emit('raspberry_registration', 'Registration successfull raspberry : ' + registrationMessage.raspberryId);
+					}
+					else
+					{
+						// Send a negative response
+						socket.emit('raspberry_registration', 'Your are not register in database, please contact admin');
+					}
+				}
+				else
+				{
+					console.log("SocketController Error : Raspberry register from Django :");
+					console.log(error);
+					console.log(response);
+				}
+			});
 		});	
 
 		socket.on('next_musique', function () {
 
 			var idRegistered = MapStorageManager.getRaspberryIdBySocketId(socket.id);
-			console.log(idRegistered);
+			optionsNextMusic.form.raspberryId = idRegistered;
 
-			clientRedis.hgetall(idRegistered, function(err, reply) {
-    				console.log(reply);
+			request(optionsNextMusic, function (error, response, body) {
+					if(!error && response.statusCode == 200)
+					{
+						var JsonResponse = JSON.parse(body);
+						clientRedis.hgetall(idRegistered, function(err, reply) {
+		    				// Update DataBase
+							reply["musique_suivante"]= JsonResponse.response;
+							clientRedis.hmset(idRegistered,reply);
+						});
+						// Send Next Music to Raspberry
+						socket.emit('next_musique',JsonResponse.response);
+					}
+					else
+					{
+						console.log("SocketController Error : Raspberry next music from Django :");
+						console.log(error);
+						console.log(response);
+					}
+			});
 
-    				//TODO Get next musique avec l'algo magique
-					// en attendant on créé une variable tmp tmp_next_musique
-
-					var tmp_next_musique = "Lorie A 20 ans";
-					var next_musique = tmp_next_musique;
-
-					reply["musique_suivante"]= next_musique;
-					console.log(reply);
-					console.log(idRegistered);
-
-					clientRedis.hmset(idRegistered,reply);
-
-					socket.emit('next_musique',next_musique);
-		        	
-
-				});
-
-			//Check Django Next Music
 		});	
 
 		socket.on('raspberry_disconnect', function () {
@@ -96,10 +122,9 @@ module.exports.listen = function(io){
 }
 
 
-module.exports.disconnect = function(callback){
+module.exports.disconnect = function(io,callback){
 	clientRedis.end(true);
-	//macStorage.forEach(disconnectSocket);
-	console.log("Redis Disconnected");
+	io.close();
 	callback();
 };
 
