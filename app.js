@@ -3,8 +3,9 @@ var http      = require('http');
 var app       = require('express')();
 var server    = require('http').Server(app);
 var io        = require('socket.io').listen(server);
-var socketController = require("./controllers/socketController").listen(io);
+var socketController = require('./controllers/socketController').listen(io);
 //var adminControl = require('./controllers/adminControl');
+var adminControlRaspberry = require('./controllers/adminControlRaspberry');
 //var userControl  = require('./controllers/userControl');
 //var mongooseManager = require('./models/mongooseManager');
 
@@ -27,7 +28,19 @@ var sharedsession = require("express-socket.io-session");
 //app.use('/adminControl', adminControl);
 //app.use('/userControl', userControl);
 
+app.use('/AdminControlRaspberry', adminControlRaspberry);
+
+var MapStorageManager = require("./helpers/MapStorageManager");
+
+
+
 /* Route Redirection */
+app.get('/',function(req, res) {
+  
+  console.log(req.query.name);
+  var socketId = MapStorageManager.getSocketByRaspberryId(req.query.name);
+  io.to(socketId).emit('jouer','aqqqqq');
+});
 
 
 /* Start */
