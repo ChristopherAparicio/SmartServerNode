@@ -13,15 +13,18 @@ client.on('connect',function(){
 	console.log('Connection to database successfull');
 })
 
+var MapStorageManager = require("../helpers/MapStorageManager");
+
 // Store Socket
 // macStorage : mac --> socketId : Useful for Django to retrieve socket
 
 var macStorage    = new Map();
-//var socketStorage = new Map();
+var socketStorage = new Map();
 
 module.exports.listen = function(io){
 	io.sockets.on('connection', function (socket) {
 		console.log('Incoming connection from raspberry');
+		
 		socket.on('raspberry_registration', function (registrationMessage) {
 			
 			// First Step : Check Django Database
@@ -30,8 +33,9 @@ module.exports.listen = function(io){
 
 			if(djangoReturn)
 			{
-				// Add Mapping between Raspberry.Id --> Socket.ID
-				macStorage.set(registrationObject.raspberryId,socket.id);
+				// Add Mapping between Raspberry.Id <--> Socket.ID
+				MapStorageManager.addToSocketStorage(registrationObject.raspberryId,socket.id);
+				MapStorageManager.addToRaspberryIdStorage(socket.id,registrationObject.raspberryId);
 
 				// Add or Overwrite Raspberry Data in Redis
 				var redisObject = JSON.stringify(registrationObject);
@@ -49,7 +53,6 @@ module.exports.listen = function(io){
 
 		socket.on('next_musique', function () {
 			//Check Django Next Music
-			var nextMusique = "Black Eyes Peas"
 
 		});	
 
@@ -59,7 +62,8 @@ module.exports.listen = function(io){
 		});	
 
 		socket.on('hello',function(message){
-			
+			MapStorageManager.printSocketStorage();
+			MapStorageManager.printRaspberryIdStorage();
 			console.log(message);
 			io.to(socket.id).emit('raspberry_registration', 'Hello Mother Fucker by IO TO');
 		});
