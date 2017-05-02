@@ -5,6 +5,7 @@ var socketStorage      = new Map();
 var raspberryIdStorage = new Map();
 
 module.exports = {
+
 	// Socket Storage Functions
 	addToSocketStorage(RaspberryId,SocketId){
 		socketStorage.set(RaspberryId,SocketId);
@@ -15,6 +16,7 @@ module.exports = {
 	printSocketStorage(){
 		console.log(socketStorage);
 	},
+	
 	// Raspberry Id Storage Functions
 	addToRaspberryIdStorage(SocketId,RaspberryId){
 		raspberryIdStorage.set(SocketId,RaspberryId);
