@@ -1,5 +1,5 @@
 var express = require('express');
-var router = express.Router();
+var router = express.Router()
 var MapStorageManager = require("../helpers/MapStorageManager");
 
 
@@ -7,6 +7,7 @@ module.exports = function(io){
 	router.get('/sendplay', function(req, res) {
 		console.log(req.query.name);
 		var socketId = MapStorageManager.getSocketByRaspberryId(req.query.name);
+
 		io.to(socketId).emit('jouer');
 		clientRedis.hgetall(idRegistered, function(err, reply) {
     				console.log(reply);
@@ -14,6 +15,7 @@ module.exports = function(io){
 					console.log(reply);
 					clientRedis.hmset(idRegistered,reply);	
 				});
+
 		res.send('Hello World');
 	});
 

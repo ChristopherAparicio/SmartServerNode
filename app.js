@@ -3,12 +3,23 @@ var http      = require('http');
 var app       = require('express')();
 var server    = require('http').Server(app);
 var io        = require('socket.io').listen(server);
-var socketController = require('./controllers/socketController').listen(io);
+//var socketController = require('./controllers/socketController').listen(io);
 //var adminControl = require('./controllers/adminControl');
 var adminControlRaspberry = require('./controllers/adminControlRaspberry')(io);
 //var userControl  = require('./controllers/userControl');
 //var mongooseManager = require('./models/mongooseManager');
 
+/*
+request(options, function (error, response, body) {
+	if(!error && response.statusCode == 201)
+	{
+		console.log('body :',body);
+		var JsonResponse = JSON.parse(body);
+		console.log(JsonResponse);
+		console.log(JsonResponse.id);
+	}
+});
+*/
 /*
 var session = require("express-session")({
     secret: "secretKey",
@@ -46,7 +57,9 @@ console.log('App.js ready');
 
 process.on('SIGINT', function() {
     console.log("Caught interrupt signal");
-    require('./controllers/socketController').disconnect(function(){
+    require('./controllers/socketController').disconnect(io,function(){
+    	console.log("Redis Disconnected");
+    	console.log("Socket Close")
     	server.close();
     });
 });
