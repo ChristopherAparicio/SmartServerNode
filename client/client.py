@@ -31,6 +31,8 @@ data = {
         "musique_suivante":"None"
 	}
 
+print(data)
+
 def on_jouer():
     data["etat"]="JOUE"
     print(data)
@@ -48,13 +50,13 @@ def on_playnextmusique():
 def on_volumeUP():
     if data["volume"] < 20:
       data["volume"] += 1
-      call(["amixer", "-D", "pulse", "sset", "Master", str(data["volume"]*100/20)"%"])
+      call(["amixer", "-D", "pulse", "sset", "Master", str(data["volume"]*100/20)+"%"])
 
 
 def on_volumeDown():
     if data["volume"] > 0:
       data["volume"] -= 1
-      call(["amixer", "-D", "pulse", "sset", "Master", str(data["volume"]*100/20)"%"])
+      call(["amixer", "-D", "pulse", "sset", "Master", str(data["volume"]*100/20)+"%"])
 
 
 def on_changeNextMusic(*args):
@@ -75,7 +77,6 @@ with SocketIO('localhost', 8080, LoggingNamespace) as socketIO:
     socketIO.on('changeMusiqueSuivante',on_changeNextMusic)
     print(data);
     socketIO.emit('raspberry_registration', json_data_registration,on_res)
-    socketIO.emit('hello', 'Hello Boy')
 
     socketIO.wait_for_callbacks(seconds=300)
     #socketIO.wait() Wait Forever
