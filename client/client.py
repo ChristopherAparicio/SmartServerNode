@@ -8,6 +8,9 @@ import json
 from random import randint
 
 
+call(["amixer", "-c", "0", "cset", "numid=3","2"])
+#call(["amixer", "-c", "0", "cset", "numid=2","1"]) HeadPhone
+
 def get_mac():
   mac_num = hex(uuid.getnode()).replace('0x', '').upper()
   mac = '-'.join(mac_num[i : i + 2] for i in range(0, 11, 2))
