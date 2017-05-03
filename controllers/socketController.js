@@ -18,14 +18,14 @@ var MapStorageManager = require("../helpers/MapStorageManager");
 var request = require('request');
 
 var optionsRegister = {
-    url: 'http://django/raspberry/register',
+    url: 'http://10.43.1.76/station/exist',
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     form: {'raspberryId': 'none'}
 }
 
 var optionsNextMusic = {
-    url: 'http://django/raspberry/nextmusic',
+    url: 'http://10.43.1.76/station/next_song',
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     form: {'raspberryId': 'none'}
