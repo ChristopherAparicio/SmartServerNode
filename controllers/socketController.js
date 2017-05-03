@@ -20,8 +20,6 @@ var optionsNextMusic = {
     form: {'raspberryId': 'none'}
 }
 
-var redisClient = require('../models/redisManager').clientRedis();
-
 // Store Socket
 // macStorage : mac --> socketId : Useful for Django to retrieve socket
 
@@ -114,7 +112,6 @@ module.exports.listen = function(io){
 
 
 module.exports.disconnect = function(io,callback){
-	clientRedis.end(true);
 	io.close();
 	callback();
 };

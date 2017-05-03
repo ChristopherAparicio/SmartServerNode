@@ -3,7 +3,7 @@ var router = express.Router()
 var MapStorageManager = require("../helpers/MapStorageManager");
 
 
-module.exports = function(io){
+module.exports = function(io,clientRedis){
 	router.get('/sendplay', function(req, res) {
 		console.log(req.query.name);
 		var socketId = MapStorageManager.getSocketByRaspberryId(req.query.name);
@@ -15,7 +15,6 @@ module.exports = function(io){
 					console.log(reply);
 					clientRedis.hmset(idRegistered,reply);	
 				});
-
 		res.send('Hello World');
 	});
 
