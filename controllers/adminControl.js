@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
-
+var MapStorageManager = require("../helpers/MapStorageManager");
 var Raspberry = require('../models/raspberry');
+var clientRedis = require('./socketControler').clientRedis;
 // middleware that is specific to this router
 
 router.use(function timeLog(req, res, next) {
@@ -31,6 +32,16 @@ router.get('/get', function(req, res) {
 		console.log(results);
 		res.send('Get');
 	});
+});
+
+
+router.get('/getinforaspberry', function(req, res) {
+	console.log(req.query.name);
+	clientRedis.hgetall(idRegistered, function(err, reply) {
+    				console.log(reply);
+    				res.send(reply);
+				});
+
 });
 
 module.exports = router;
