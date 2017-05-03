@@ -24,7 +24,7 @@ def on_res(*args):
 
 
 data = {	
-		"raspberryId":mock_get_mac(),
+		"raspberryId":get_mac(),
 		"etat":"ATTENTE",
 		"volume":0,
         "musique_courrante":"None",
