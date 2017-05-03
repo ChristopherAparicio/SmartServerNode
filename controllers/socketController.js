@@ -2,17 +2,6 @@ var socketIO  = require('socket.io');
 
 /* Move Following line of code in db.js */
 
-var redis = require('redis');
-
-var redisPort = 6379;
-var redisHost = '127.0.0.1';
-
-var clientRedis = redis.createClient();
-
-clientRedis.on('connect',function(){
-	console.log('Connection to database successfull');
-})
-
 var MapStorageManager = require("../helpers/MapStorageManager");
 
 var request = require('request');
@@ -30,6 +19,8 @@ var optionsNextMusic = {
     headers: {'Content-Type':'application/json'},
     form: {'raspberryId': 'none'}
 }
+
+var redisClient = require('../models/redisManager').clientRedis();
 
 // Store Socket
 // macStorage : mac --> socketId : Useful for Django to retrieve socket

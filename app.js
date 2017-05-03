@@ -3,9 +3,11 @@ var http      = require('http');
 var app       = require('express')();
 var server    = require('http').Server(app);
 var io        = require('socket.io').listen(server);
-//var socketController = require('./controllers/socketController').listen(io);
+var socketController = require('./controllers/socketController').listen(io);
 //var adminControl = require('./controllers/adminControl');
 var adminControlRaspberry = require('./controllers/adminControlRaspberry')(io);
+var redisClient = require('./models/redisManager').clientRedis();
+
 //var userControl  = require('./controllers/userControl');
 //var mongooseManager = require('./models/mongooseManager');
 
