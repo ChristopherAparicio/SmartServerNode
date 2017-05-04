@@ -6,11 +6,11 @@ var MapStorageManager = require("../helpers/MapStorageManager");
 
 var request = require('request');
 
-
+var addrDjango = '172.20.10.12';
 
 var optionsNextMusic = {
     //url: 'http://10.43.1.76/station/next_song',
-    url: 'http://10.43.0.190/station/next_song',
+    url: 'http://'+addrDjango+'/station/next_song',
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     json: {'raspberryId': 'none'}
@@ -36,7 +36,7 @@ module.exports.listen = function(io,clientRedis){
 			console.log(jsonObject);
 			var optionsRegister = {
 			    //url: "http://10.43.1.76/station/exist",
-			    url: "http://10.43.0.190/station/exist",
+			    url: "http://"+addrDjango+"/station/exist",
 			    method: "POST",
 			    headers: {"Content-Type":"application/json"},
 			    json: jsonObject
@@ -62,6 +62,7 @@ module.exports.listen = function(io,clientRedis){
 						clientRedis.hmset(registrationObject.raspberryId,registrationObject);
 
 						// Send a positive response
+						console.log('envoie au raspberry quon est connecté');
 						socket.emit('raspberry_registration', 1);
 						console.log("Registration successfull");
 					}
@@ -92,12 +93,17 @@ module.exports.listen = function(io,clientRedis){
 						console.log(body);
 						clientRedis.hgetall(idRegistered, function(err, reply) {
 		    				// Update DataBase
-							reply["musique_suivante"]= body.next_song;
+		    				console.log(body);
+							reply["musique_suivante"]= body.next_song_uri;
+							console.log("pb");
+							console.log(idRegistered);
+							console.log(reply);
 							clientRedis.hmset(idRegistered,reply);
 						});
 						// Send Next Music to Raspberry
 						console.log("envoie de la musique suivante au raspberry");
-						socket.emit('changeMusiqueSuivante',body.next_song);
+						socket.emit('changeMusiqueSuivante',body.next_song_uri);
+
 					}
 					else
 					{
