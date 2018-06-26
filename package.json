@@ -4,7 +4,7 @@
   "description": "Node JS Server : Handle communication between Raspberrys and Django Server",
   "dependencies": {
     "socket.io": "~1.7.3",
-    "express": "~4.15",
+    "express": "~4.16.0",
     "redis": "~2.7.1",
     "request": "~2.81.0"
   }
